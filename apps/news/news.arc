@@ -602,7 +602,7 @@
                 (tag (span "id" "navright")
                     (when ,gu
                       (if (noob ,gu)
-                        (toplink "bienvenue " "bienvenue " ,gl))
+                        (toplink "bienvenue " "welcome" ,gl))
                       (tag (span "id" "userlink")
                         (userlink ,gu ,gu nil))
                       (when showkarma*

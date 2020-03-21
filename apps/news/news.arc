@@ -1,12 +1,12 @@
-(= this-site*    "Anarki"
-   site-url*     "http://site.example.com";your domain name
-   parent-url*   "http://github.com/arclanguage/anarki"
+(= this-site*    "COVID19: que lire?"
+   site-url*     "https://www.covid19-que-lire.fr";your domain name
+   parent-url*   ""
 ;  favicon-url*  "favicon.ico"
    ; Page Layout
-;   up-url*       "grayarrow.gif" 
-;   down-url*     "graydown.gif" 
+;   up-url*       "grayarrow.gif"
+;   down-url*     "graydown.gif"
    logo-url*     "arc.png"
-   site-desc*    "What this site is about."               ; for rss feed
+   site-desc*    "Ressources à lire pour se mobiliser contre le COVID19."               ; for rss feed
    site-color*   (color 180 180 180)
 ;   border-color* (color 180 180 180)
    prefer-url*   t
@@ -20,8 +20,8 @@
 ; remember to set caching to 0 when testing non-logged-in
 
    caching*  0
-   perpage* 30 
-   threads-perpage* 10 
+   perpage* 30
+   threads-perpage* 10
    maxend* 210
 
 ; browsers can cache static files for 7200 sec
@@ -32,8 +32,8 @@
 
 ; non static file defops which will return custom (non html) content-types
    op-ctypes* {
-    rss           "text/xml" 
-    rss-stories   "text/xml" 
+    rss           "text/xml"
+    rss-stories   "text/xml"
     follow        "text/xml"
     personal-data "application/json"
 }
@@ -118,7 +118,7 @@
   kids       nil
   keys       nil)
 
-(deftem page 
+(deftem page
   id 0
   url nil
   title nil
@@ -139,41 +139,41 @@
 
 ;url is not a full url, but the endpoint of a defop ex: "faq"
 (def save-page (url title text id)
-  (let p (inst 'page 'id id 
-               'url url 
-               'title title 
+  (let p (inst 'page 'id id
+               'url url
+               'title title
                'text text)
     (temstore 'page p (string pagedir* id))
     (= (pages* id) p)))
 
-(def get-page (id) 
+(def get-page (id)
   (pages* (errsafe:int id)))
 
-(def page-editlink (id) 
-  (link "edit" (string "/editpage?id=" id)))
+(def page-editlink (id)
+  (link "éditer" (string "/editpage?id=" id)))
 
-(def page-createlink () 
-  (link "new page" "/newpage"))
+(def page-createlink ()
+  (link "nouvelle page" "/newpage"))
 
-(def page-link (url id) 
+(def page-link (url id)
   (link url (string "/page?id=" id)))
 
-(def page-menu () 
-  (each (k p) pages* 
-    (do 
+(def page-menu ()
+  (each (k p) pages*
+    (do
       (page-link p!url p!id)
       (pr " | "))))
 
-; returns the new id 
+; returns the new id
  (def new-page (url title text)
-  (let i (++ pageid*) 
+  (let i (++ pageid*)
     (save-page url title text i) i))
 
  (def edit-page (url title text id)
   (save-page url title text id))
 
  (def delete-page (id)
-  (= (pages* (errsafe:int id)) nil) 
+  (= (pages* (errsafe:int id)) nil)
   (if (file-exists (string pagedir* id))
     (rmfile (string pagedir* id))))
 
@@ -181,50 +181,50 @@
   (link "delete" (rflink (fn (req) (delete-page id) "/"))))
 
 ; need to delay macro expansion or else
-; the following error occurs: 
+; the following error occurs:
 ; Can't coerce  #s(ar-tagged mac #<procedure: minipage>) fn
 ; see http://arclanguage.org/item?id=18018
 ;     http://arclanguage.org/item?id=13306
 
 (def show-page (user id tt tx)
-  (eval `(shortpage ,user nil ,tt "/" 
-    (do 
+  (eval `(shortpage ,user nil ,tt "/"
+    (do
       (tag ("h4") (pr ,tt))
-      
+
       (tag ("div") (pr (markdown (trim (rem #\return ,tx) 'both) 80)))
-      
+
       (when (admin ,user)
         (page-editlink ,id)
         (pr " | ")
         (page-deletelink, id))))))
 
-(defop page req 
+(defop page req
   (iflet p (get-page (arg req "id"))
     (show-page (get-user req) p!id p!title p!text)))
 
 (defop newpage req (when (admin (get-user req))
-  (arform (fn (req) 
-     (let i (new-page (arg req "url") 
-                      (arg req "title") 
+  (arform (fn (req)
+     (let i (new-page (arg req "url")
+                      (arg req "title")
                       (arg req "text"))
      (string "/page?id=" i)))
-     (tag table 
-       (row (prn "create a page"))
+     (tag table
+       (row (prn "créer une page"))
        (row "url:" (input "url"))
-       (row "title:" (input "title"))
-       (row "text:" (textarea "text" 8 60)) 
-       (row (submit "create")))))) 
+       (row "titre:" (input "title"))
+       (row "texte:" (textarea "text" 8 60))
+       (row (submit "create"))))))
 
 (defop editpage req (when (admin (get-user req))
   (whenlet p (get-page (arg req "id"))
-    (arform (fn (req) 
+    (arform (fn (req)
       (edit-page p!url (arg req "title") (arg req "text") p!id)
       (string "/page?id=" p!id))
-    (tag table 
-      (row (prn "edit a page"))
-      (row "title:" (input "title" (prn p!title)))
-      (row "text:" (textarea "text" 8 60 (prn p!text))) 
-      (row (submit "edit")))))))
+    (tag table
+      (row (prn "éditer une page"))
+      (row "titre:" (input "title" (prn p!title)))
+      (row "texte:" (textarea "text" 8 60 (prn p!text)))
+      (row (submit "éditer")))))))
 
 (defop deletepage req (when (admin (get-user req))
   (delete-page (arg req "id"))))
@@ -236,7 +236,7 @@
 (def nsv ((o port 8080))
   (map ensure-dir (list srvdir* newsdir* storydir* votedir* profdir* pagedir*))
   (unless stories* (load-items))
-  (if (and initload-users* (empty profs*)) 
+  (if (and initload-users* (empty profs*))
     (load-users))
     (load-pages)
   (asv port))
@@ -323,7 +323,7 @@
   (each file (dir storydir*)
     (if (endmatch ".tmp" file)
       (rmfile (+ storydir* file))))
-  (pr "load items: ")
+  (pr "charger les items: ")
   (with (items (table)
          ids   (sort > (map int (dir storydir*))))
     (if ids (= maxid* (car ids)))
@@ -338,7 +338,7 @@
 (def ensure-topstories ()
   (aif (errsafe (readfile1 (+ newsdir* "topstories")))
     (= ranked-stories* (map item it))
-    (do (prn "ranking stories.")
+    (do (prn "classer les nouvelles.")
         (flushout)
         (gen-topstories))))
 
@@ -539,13 +539,13 @@
 (def userstyle (user)
   (with (font-size (aif (and user (uvar user font-size)) it 12)
          bgcolor (hexrep (main-color user)))
-    (pr 
+    (pr
       (tag ("style" "type" "text/css")
-        (string  "body { 
-                    font-size:" font-size "pt!important; 
+        (string  "body {
+                    font-size:" font-size "pt!important;
                   }
-                  .topcolor { 
-                     background-color: #" bgcolor 
+                  .topcolor {
+                     background-color: #" bgcolor
                   "};")))))
 (def usertheme (user)
   (let theme (string "/" (themes* (aif (and user (uvar user theme)) it 0)) ".css")
@@ -556,15 +556,15 @@
 (= pagefns* nil)
 
 ; page top
-(= toplabels* '(nil "welcome" "new" "threads" "comments" "ask" "*")
+(= toplabels* '(nil "bienvenue" "nouveaux" "fils" "commentaires" "demander" "*")
    showkarma* t)
 
 ;Other page templates have been deprecated and folded into this, which
 ;provides a single macro for generating HTML pages for News (thus its size.)
 (mac longpage (user time label title whence . body)
   (w/uniq (gu gl gt gw gd)
-    `(with (,gu ,user ,gl ,label ,gt ,title ,gw ,whence ,gd ,time) 
-      (do 
+    `(with (,gu ,user ,gl ,label ,gt ,title ,gw ,whence ,gd ,time)
+      (do
        (prn "<!DOCTYPE html>")
        (tag html
          (tag head
@@ -575,50 +575,50 @@
            (gentag "meta" "name" "viewport" "value" "width=device-width")
            (tag (script "type" "text/javascript" "src" "/news.js"))
            (tag title (pr (+ this-site* (if ,gt (+ bar* ,gt) "")))))
-           (tag body 
-           ;(tag (div "class" "layout sand") 
+           (tag body
+           ;(tag (div "class" "layout sand")
            (tag (div "class" "layout")
-           (if (check-procrast ,gu) 
+           (if (check-procrast ,gu)
             (do
              (tag (div "class" "topcolor page-header")
-               
+
                (tag (span "id" "navleft")
-                 
+
                  (tag (link rel "icon" href logo-url*))
-                 
+
                  (tag (a "id" "logo" href parent-url*)
                    (tag (img src logo-url*)))
 
-                   (tag (span "id" "page-title") 
+                   (tag (span "id" "page-title")
                      (link this-site* "news")))
-               
+
                (tag (span "id" "navmain")
-                 (w/bars 
-                   (toplink "new" "newest" ,gl)
-                   (toplink "comments" "newcomments" ,gl)
-                   (toplink "ask" "ask" ,gl)
-                   (link  "submit")))
-                
+                 (w/bars
+                   (toplink "nouveaux" "newest" ,gl)
+                   (toplink "commentaires" "newcomments" ,gl)
+                   (toplink "questions" "ask" ,gl)
+                   (link  "contribuer" "submit")))
+
                 (tag (span "id" "navright")
                     (when ,gu
                       (if (noob ,gu)
-                        (toplink "welcome " "welcome " ,gl))
-                      (tag (span "id" "userlink") 
+                        (toplink "bienvenue " "bienvenue " ,gl))
+                      (tag (span "id" "userlink")
                         (userlink ,gu ,gu nil))
-                      (when showkarma* 
+                      (when showkarma*
                         (pr (string " (" (karma ,gu) ") |")))
                       (pr "&nbsp;")
-                      (toplink "threads" (threads-url ,gu) ,gl)
+                      (toplink "fils" (threads-url ,gu) ,gl)
                       (pr "&nbsp;|&nbsp;")
                       (when (and ,gu (> (karma ,gu) poll-threshold*))
-                        (toplink "poll" "newpoll" ,gl)
+                        (toplink "sondage" "newpoll" ,gl)
                         (pr "&nbsp;|&nbsp;")))
                       (if ,gu
                         (rlinkf 'logout (req)
                           (when-umatch/r ,gu req
                             (logout-user ,gu)
                         ,gw))
-                        (onlink "login"
+                        (onlink "connexion"
                           (news-login-page nil
                                 (list (fn (u ip)
                                         (ensure-news-user u)
@@ -633,16 +633,17 @@
 
                (tag (div "class" "page-footer topcolor")
                   (hook 'longfoot)
-                  (tag ("span" "class" "yclinks") 
+                  (tag ("span" "class" "yclinks")
                     (page-menu)
                     (when (admin, gu)
                       (page-createlink)
                       (pr " | "))
                     (link "rss")
-                    (pr " | ")
-                    (link "bookmarklet"))
-                  
-                  (if (bound 'search-bar) 
+                    ;; (pr " | ")
+                    ;;(link "bookmarklet"))
+                    )
+
+                  (if (bound 'search-bar)
                     (search-bar ,gu))
                   (when (admin ,gu)
                       (br2)
@@ -675,7 +676,7 @@
     (display-items user items label title url 0 perpage* number)))
 
 (def news-login-page ((o msg nil) (o afterward hello-page))
-     (minipage "Login"
+     (minipage "Connexion"
       (pagemessage msg)
       (login-form afterward)
       (hook 'login-form afterward)
@@ -704,7 +705,7 @@
   `(defop ,name ,parm
      (if (,test (get-user ,parm))
        (do ,@body)
-       (news-login-page (+ "Please log in" ,msg ".")
+       (news-login-page (+ "Merci de vous connecter" ,msg ".")
                    (list (fn (u ip) (ensure-news-user u))
                          (string ',name (reassemble-args ,parm)))))))
 
@@ -712,10 +713,10 @@
   `(defopt ,name ,parm idfn "" ,@body))
 
 (mac defope (name parm . body)
-  `(defopt ,name ,parm editor " as an editor" ,@body))
+  `(defopt ,name ,parm editor " comme éditeur" ,@body))
 
 (mac defopa (name parm . body)
-  `(defopt ,name ,parm admin " as an administrator" ,@body))
+  `(defopt ,name ,parm admin " comme administrateur" ,@body))
 
 (mac opexpand (definer name parms . body)
   (w/uniq gr
@@ -967,14 +968,14 @@
 ; TODO: only display list numbers for newest items page
 (def display-items (user items label title whence
                     (o start 0) (o end perpage*) (o number))
-    (tag (ol "class" "items-list") 
+    (tag (ol "class" "items-list")
     (let n start
       (each i (cut items start end)
         (tag li (display-item (and number (++ n)) i user whence t))))
     (when end
       (let newend (+ end perpage*)
         (when (and (<= newend maxend*) (< end (len items)))
-          (tag li 
+          (tag li
             (morelink display-items
               items label title end newend number)))))))
 
@@ -997,7 +998,7 @@
 
 (def display-story (i s user whence)
   (when (or (cansee user s) (s 'kids))
-    (tag (div "class" "itemhead") 
+    (tag (div "class" "itemhead")
         (votelinks s user whence)
         (titleline s s!url user whence))
         (tag (div "class" "subtext")
@@ -1034,7 +1035,7 @@
 ; site archival
 
 ; check the Internet Archive for the item (s) url, if it exists, store the data locally
-; and return whence, otherwise return a link to IA to archive the url. 
+; and return whence, otherwise return a link to IA to archive the url.
 (def set-ia-archive (s whence (o port stdin))
   (let arch (fromstring ((mkreq (string "https://archive.org/wayback/available?url=" s!url)) 1) (read-json (port)))
     (if (len> arch!archived_snapshots 0)
@@ -1047,9 +1048,9 @@
 ; display the archival link
 (def ia-archivelink (s whence)
   (if (s "archive-url")
-    (tag ("a" "href" (s "archive-url")) (pr "archived"))
+    (tag ("a" "href" (s "archive-url")) (pr "archivé"))
     (tag ("a" "href" (rflink (fn (req)
-      (set-ia-archive s whence)))) 
+      (set-ia-archive s whence))))
       (pr "archive"))))
 
 (def titlelink (s url user)
@@ -1071,7 +1072,7 @@
   (when (and i!deleted (admin user))
     (pr " [deleted] ")))
 
-(= downvote-threshold* 200 
+(= downvote-threshold* 200
    downvote-time* 1440
    votewid* 14
    uparrow-black "&#9650;"
@@ -1105,8 +1106,8 @@
     (pr downarrow-black)))
 
 ;(def votelink (i user whence dir)
-;    (tag (a class "votelink" 
-;            "data-id" (string i!id) 
+;    (tag (a class "votelink"
+;            "data-id" (string i!id)
 ;            "data-dir" (string dir)
 ;          href    (vote-url user i dir whence))
 ;    (if (is dir 'up)
@@ -1169,7 +1170,7 @@
     (byline i user)))
 
 (def itemscore (i (o user))
-  (tag (span "class" "itemscore" 
+  (tag (span "class" "itemscore"
              "data-score" (string i!score)
              id (+ "score_" i!id))
     (pr (plural (if (is i!type 'pollopt) (realscore i) i!score)
@@ -1211,10 +1212,10 @@
     (tag (a href (item-url i!id))
       (let n (- (visible-family user i) 1)
         (if (> n 0)
-          (do (pr (plural n "comment"))
+          (do (pr (plural n "commentaire"))
               (awhen (and show-threadavg* (admin user) (threadavg i))
                 (pr " (@(num it 1 t t))")))
-          (pr "discuss"))))))
+          (pr "discuter"))))))
 
 (def visible-family (user i)
   (+ (if (cansee user i) 1 0)
@@ -1245,12 +1246,12 @@
 (def editlink (i user)
   (when (canedit user i)
     (pr bar*)
-    (link  "edit" (edit-url i))))
+    (link "éditer" (edit-url i))))
 
 (def addoptlink (p user)
   (when (or (admin user) (author user p))
     (pr bar*)
-    (onlink "add choice" (add-pollopt-page p user))))
+    (onlink "ajouter une option" (add-pollopt-page p user))))
 
 ; reset later
 
@@ -1331,11 +1332,11 @@
 (def deletelink (i user whence)
   (when (candelete user i)
     (pr bar*)
-    (linkf (if i!deleted "undelete" "delete") (req)
+    (linkf (if i!deleted "dé-supprimer" "supprimer") (req)
       (let user (get-user req)
         (if (candelete user i)
           (del-confirm-page user i whence)
-          (prn "You can't delete that."))))))
+          (prn "Vous ne pouvez pas supprimer ça."))))))
 
 ; Undeleting stories could cause a slight inconsistency. If a story
 ; linking to x gets deleted, another submission can take its place in
@@ -1352,10 +1353,10 @@
       (tr (td)
           (td (urform user req
                       (do (when (candelete user i)
-                            (= i!deleted (is (arg req "b") "Yes"))
+                            (= i!deleted (is (arg req "b") "Oui"))
                             (save-item i))
                           whence)
-                 (prn "Do you want this to @(if i!deleted 'stay 'be) deleted?")
+                 (prn "Voulez-vous que que cela @(if i!deleted 'reste 'soit) supprimé?")
                  (br2)
                  (but "Yes" "b") (sp) (but "No" "b")))))))
 
@@ -1368,9 +1369,9 @@
 
 (def text-age (a)
   (tostring
-    (if (>= a 1440) (pr (plural (trunc (/ a 1440)) "day")    " ago")
-        (>= a   60) (pr (plural (trunc (/ a 60))   "hour")   " ago")
-                    (pr (plural (trunc a)          "minute") " ago"))))
+    (if (>= a 1440) (pr "il y a " (plural (trunc (/ a 1440)) "jour")   "")
+        (>= a   60) (pr "il y a " (plural (trunc (/ a 60))   "heure")  "")
+                    (pr "il y a " (plural (trunc a)          "minute") ""))))
 
 ; Voting
 
@@ -1472,7 +1473,7 @@
 
 (def submit-login-warning ((o url) (o title) (o showtext) (o text)
                            (o req)) ; unused
-  (news-login-page "You have to be logged in to submit."
+  (news-login-page "Vous devez vous connecter pour proposer un lien."
               (fn (user ip)
                 (ensure-news-user user)
                 (newslog ip user 'submit-login)
@@ -1490,15 +1491,15 @@
                            (and showtext (md-from-form (arg req "x") t))
                            req!ip)
       (tab
-        (row "title"  (input "t" title 50))
+        (row "Titre"  (input "t" title 50))
         (if prefer-url*
-          (do (row "url" (input "u" url 50))
+          (do (row "Lien" (input "u" url 50))
               (when showtext
-                (row "" "<b>or</b>")
-                (row "text" (textarea "x" 4 50 (only.pr text)))))
-          (do (row "text" (textarea "x" 4 50 (only.pr text)))
-              (row "" "<b>or</b>")
-              (row "url" (input "u" url 50))))
+                (row "" "<b>ou</b>")
+                (row "Texte" (textarea "x" 4 50 (only.pr text)))))
+          (do (row "Texte" (textarea "x" 4 50 (only.pr text)))
+              (row "" "<b>ou</b>")
+              (row "Lien" (input "u" url 50))))
         (row "" (submit))
         (spacerow 20)
         (row "" submit-instructions*)
@@ -1506,15 +1507,14 @@
         (row "" submit-via-bookmarklet*)))))
 
 (= submit-instructions*
-   "Leave url blank to submit a question for discussion. If there is
-    no url, the text (if any) will appear at the top of the comments
-    page. If there is a url, the text will be ignored.")
+   "Laissez le lien vide pour soumettre une question à la discussion.  S'il n'y a pas de lien, le texte apparaîtra en haut des commentaires de la page.  S'il y a un lien, le texte sera ignoré.")
 
 (= submit-via-bookmarklet*
-   (tostring
-     (pr "You can also submit via ")
-     (underlink "bookmarklet")
-     (pr ".")))
+   (tostring ""
+    ;; (pr "Vous pouvez aussi soumettre via ")
+    ;;  (underlink "bookmarklet")
+    ;;  (pr ".")
+     ))
 
 ; Bookmarklet
 
@@ -1539,13 +1539,13 @@
     (submit-login-warning u t)))
 
 (= title-limit* 80
-   retry*       "Please try again."
-   toolong*     "Please make title < @title-limit* characters."
-   bothblank*   "The url and text fields can't both be blank.  Please
-                 either supply a url, or if you're asking a question,
-                 put it in the text field."
-   toofast*     "You're submitting too fast.  Please slow down.  Thanks."
-   spammage*    "Stop spamming us.  You're wasting your time.")
+   retry*       "Merci de réessayer."
+   toolong*     "Le titre doit faire moins de < @title-limit* caractères."
+   bothblank*   "Les champs lien et texte ne peuvent être tous les deux vides.  Merci
+                 de soit soumettre un lien (URL), ou si vous posez une question,
+                 mettez la dans le champe texte."
+   toofast*     "Vous proposez des liens trop vite.  Ralentissez.  Merci."
+   spammage*    "Arrêtez de nous spammer.  Vous perdez votre temps.")
 
 ; Only for annoyingly high-volume spammers. For ordinary spammers it's
 ; enough to ban their sites and ip addresses.
@@ -1749,11 +1749,11 @@
 (newsop newpoll ()
   (if (and user (> (karma user) poll-threshold*))
     (newpoll-page user)
-    (pr "Sorry, you need @poll-threshold* karma to create a poll.")))
+    (pr "Désolé, il vous faut @poll-threshold* de réputation pour créer un vote.")))
 
 (def newpoll-page (user (o title "Poll: ") (o text "") (o opts "") (o msg)
                         (o req)) ; unused
-  (minipage "New Poll"
+  (minipage "Nouveau sondage"
     (pagemessage msg)
     (urform user req
             (process-poll (get-user req)
@@ -1762,13 +1762,13 @@
                           (striptags (arg req "o"))
                           req!ip)
       (tab
-        (row "title"   (input "t" title 50))
-        (row "text"    (textarea "x" 4 50 (only.pr text)))
-        (row ""        "Use blank lines to separate choices:")
-        (row "choices" (textarea "o" 7 50 (only.pr opts)))
+        (row "titre"   (input "t" title 50))
+        (row "texte"    (textarea "x" 4 50 (only.pr text)))
+        (row ""        "Utilisez des lignes vides pour séparer les choix:")
+        (row "choix" (textarea "o" 7 50 (only.pr opts)))
         (row ""        (submit))))))
 
-(= fewopts* "A poll must have at least two options.")
+(= fewopts* "Un sondage doit avoir au moins deux options.")
 
 (def process-poll (user title text opts ip)
   ; NOTE: Here in Anarki, [...] without _ is nullary, so we're using
@@ -1806,12 +1806,12 @@
     o))
 
 (def add-pollopt-page (p user)
-  (minipage "Add Poll Choice"
+  (minipage "Ajouter une option de sondage"
     (urform user req
             (do (add-pollopt user p (striptags (arg req "x")) req!ip)
                 (item-url p!id))
       (tab
-        (row "text" (textarea "x" 4 50))
+        (row "texte" (textarea "x" 4 50))
         (row ""     (submit))))))
 
 (def add-pollopt (user p text ip)
@@ -1826,7 +1826,7 @@
     (spacerow 7)))
 
 (def display-pollopt (n o user whence)
-  (tr 
+  (tr
       (tag (td valign 'top)
       (votelinks o user whence))
       (tag (td class 'comment)
@@ -1862,7 +1862,7 @@
       (do (if s!deleted (note-baditem user ip))
           (item-page user s))
       (do (note-baditem user ip)
-          (pr "No such item.")))))
+          (pr "Pas de tel item.")))))
 
 (= baditemreqs* (table) baditem-threshold* 1/100)
 
@@ -1949,7 +1949,7 @@
              (editable-type i)
              (or (news-type i) (admin user) (author user i)))
       (edit-item user i)
-      (pr "No such item."))))
+      (pr "Pas de tel item."))))
 
 (def editable-type (i) (fieldfn* i!type))
 
@@ -2062,7 +2062,7 @@
       (br2)
       (spanclass subtext (pr noob-comment-msg*)))
     (br2)
-    (submit (if (acomment parent) "reply" "add comment"))))
+    (submit (if (acomment parent) "répondre" "Ajouter un commentaire"))))
 
 (= comment-threshold* -20)
 
@@ -2110,7 +2110,7 @@
 
 (def display-subcomments (c user whence (o indent 0))
   (if c!kids
-    (tag (ul "class" "comments-list") 
+    (tag (ul "class" "comments-list")
       (each k (sort (compare > frontpage-rank:item) c!kids)
         (display-comment-tree (item k) user whence indent)))))
 
@@ -2170,8 +2170,8 @@
 (def gen-comment-body (c user whence astree indent showpar showon)
     (let parent (and (or (no astree) showpar) (c 'parent))
       (tag ("div" "class" "comhead")
-         (tag-if (author user c) 
-            (span class "opcomment topcol") 
+         (tag-if (author user c)
+            (span class "opcomment topcol")
           (itemline c user))
           (when parent
             (when (cansee user c) (pr bar*))
@@ -2190,14 +2190,14 @@
               (link (ellipsize s!title 50) (item-url s!id)))))
       (when (or parent (cansee user c)))
       (tag ("div" "class"  (if (> c!score 0) "comment" (string "comment comment-" (abs c!score)))
-        "data-score" (string c!score) 
+        "data-score" (string c!score)
         ;"style" (string "color: #" (hexrep (comment-color c)))
         )
         (if (~cansee user c)               (pr (pseudo-text c))
             (nor (live c) (author user c)) (spanclass dead (pr c!text))
                                              (pr c!text)))
       (when (and astree (cansee user c) (live c))
-        
+
         (tag ("div" "class" "comfoot")
           (if (and (~mem 'neutered c!keys)
                    (replyable c indent)
@@ -2217,7 +2217,7 @@
   (or (< indent 2)
       (> (item-age c) (expt (- indent 1) reply-decay*))))
 
-(def replylink (i whence (o title 'reply))
+(def replylink (i whence (o title 'Répondre))
   (link title (+ "reply?id=" i!id "&whence=" (urlencode whence))))
 
 (newsop reply (id whence)
@@ -2226,12 +2226,12 @@
     (if (only.comments-active i)
       (if user
           (addcomment-page i user whence)
-          (news-login-page "You have to be logged in to comment."
+          (news-login-page "Vous devez être connecté pour commenter."
                       (fn (u ip)
                         (ensure-news-user u)
                         (newslog ip u 'comment-login)
                         (addcomment-page i u whence))))
-      (pr "No such item."))))
+      (pr "Pas de tel item."))))
 
 ;(def comment-color (c)
 ;  (if (> c!score 0) black (grayrange c!score)))
@@ -2247,18 +2247,18 @@
 (newsop threads (id)
   (if id
     (threads-page user id)
-    (pr "No user specified.")))
+    (pr "Pas d'utilisateur indiqué.")))
 
 (def threads-page (user subject)
   (if (profile subject)
-    (withs (title (+ subject "'s comments")
-            label (if (is user subject) "threads" title)
+    (withs (title (+ subject " commentaire")
+            label (if (is user subject) "fils" title)
             here  (threads-url subject))
       (longpage user (msec) label title here
         (awhen (keep [and (cansee user _) (~subcomment _)]
                      (comments subject maxend*))
           (display-threads user it label title here))))
-    (prn "No such user.")))
+    (prn "Pas de tel utilisateur.")))
 
 (def display-threads (user comments label title whence
                       (o start 0) (o end threads-perpage*))
@@ -2293,11 +2293,11 @@
 (newsop submitted (id)
   (if id
     (submitted-page user id)
-    (pr "No user specified.")))
+    (pr "Pas d'utilisateur indiqué.")))
 
 (def submitted-page (user subject)
   (if (profile subject)
-    (with (label (+ subject "'s submissions")
+    (with (label (+ subject " propositions")
            here  (submitted-url subject))
       (longpage user (msec) label label here
         (if (or (no (ignored subject))
@@ -2306,19 +2306,19 @@
             (aif (keep [and (metastory _) (cansee user _)]
                        (submissions subject))
                  (display-items user it label label here 0 perpage* t)))))
-    (pr "No such user.")))
+    (pr "Pas de tel utilisateur.")))
 
 
 ; list stories from one domain
 
 (newsop from (site)
-  (listpage user (msec) (keep [is (sitename (_ 'url)) site] stories*) "from" (string "Submissions from " site)))
+  (listpage user (msec) (keep [is (sitename (_ 'url)) site] stories*) "de" (string "Propositions de " site)))
 
 
 ; list stories that don't link anywhere
 
 (newsop ask ()
-  (listpage user (msec) (keep [empty (_ 'url)] stories*) "ask" "Ask"))
+  (listpage user (msec) (keep [empty (_ 'url)] stories*) "demander" "Demander"))
 
 ; RSS
 (newsop rss () (rsspage nil))
@@ -2340,7 +2340,7 @@
               (tag link     (pr (if (blank s!url) comurl (eschtml s!url))))
               (tag comments (pr comurl))
               (tag description
-                (cdata (link "Comments" comurl)))))))))
+                (cdata (link "Commentaires" comurl)))))))))
 
 ; RSS feed of user
 (newsop follow (subject)
@@ -2413,7 +2413,7 @@
 (newsop active () (active-page user))
 
 (newscache active-page user 600
-  (listpage user (msec) (actives user) "active" "Active Threads"))
+  (listpage user (msec) (actives user) "actif" "Fils actifs"))
 
 (def actives (user (o n maxend*) (o consider 2000))
   (visible user (rank-stories n consider (memo active-rank))))
@@ -2431,7 +2431,7 @@
 
 (newscache newcomments-page user 60
   (listpage user (msec) (visible user (firstn maxend* comments*))
-            "comments" "New Comments" "newcomments" nil))
+            "commentaires" "Nouveau Commentaires" "newcomments" nil))
 
 ; Noprocrast
 
@@ -2480,22 +2480,21 @@
 (defopg resetpw req (resetpw-page (get-user req)))
 
 (def resetpw-page (user (o msg))
-  (minipage "Reset Password"
+  (minipage "Réinitialiser votre mot de passe"
     (if msg
          (pr msg)
         (blank (uvar user email))
-         (do (pr "Before you do this, please add your email address to your ")
-             (underlink "profile" (user-url user))
-             (pr ". Otherwise you could lose your account if you mistype
-                  your new password.")))
+         (do (pr "Avant de faire ça, indiquez votre adresse dans votre ")
+             (underlink "profil" (user-url user))
+             (pr ". Sinon vous pourriez perdre votre compte si vous tapez mal votre nouveau mot de passe.")))
     (br2)
     (uform user req (try-resetpw user (arg req "p"))
-      (single-input "New password: " 'p 20 "reset" t))))
+      (single-input "Nouveau mot de passe: " 'p 20 "reset" t))))
 
 (def try-resetpw (user newpw)
   (if (len< newpw 4)
-    (resetpw-page user "Passwords should be a least 4 characters long.
-                        Please choose another.")
+    (resetpw-page user "Les mots de passe doivent faire au moins 4 caractères.
+                        Merci d'en choisir un autre.")
     (do (set-pw user newpw)
         (newspage user))))
 
@@ -2690,7 +2689,7 @@
            stories   (keep [author user _] stories*)))))
 
 (def personal-data-link ()
-  (tostring (underlink "download personal data" "personal-data")))
+  (tostring (underlink "télécharger vos données" "personal-data")))
 
 ; Stats
 

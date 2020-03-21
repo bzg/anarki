@@ -45,7 +45,7 @@ Returns nil if no logged-in user."
      (mismatch-message)))
 
 (def mismatch-message ()
-  (prn "Dead link: users don't match."))
+  (prn "Lien mort: les utilisateurs ne correspondent pas."))
 
 (mac when-umatch/r (user req . body)
   `(if (is ,user (get-user ,req))
@@ -116,7 +116,7 @@ Returns nil if no logged-in user."
   (save-table emails* emailfile*))
 
 (def hello-page (user ip)
-  (whitepage (prs "hello" user "at" ip)))
+  (whitepage (prs "hello" user "sur" ip)))
 
 (defop login req (login-page))
 
@@ -137,23 +137,23 @@ Returns nil if no logged-in user."
     (signup-form afterward)))
 
 (def login-form (afterward)
-  (prbold "Login")
+  (prbold "Connexion")
   (br2)
   (fnform (fn (req) (login-handler req afterward))
           (fn ()
             (pwfields)
             (br2)
-            (tag div (link "Forgot your password?" "/forgotpw")))
+            (tag div (link "Mot de passe oublié?" "/forgotpw")))
           (acons afterward)))
 
 (def login-handler (req afterward)
   (logout-user (get-user req))
   (aif (good-login (arg req "u") (arg req "p") req!ip)
     (login it req!ip (user->cookie* it) afterward)
-    (failed-login "Bad login." afterward)))
+    (failed-login "Mauvais login." afterward)))
 
 (def signup-form (afterward)
-  (prbold "Create Account")
+  (prbold "Créer un compte")
   (br2)
   (fnform (fn (req) (signup-handler req afterward))
           (fn ()
@@ -161,7 +161,7 @@ Returns nil if no logged-in user."
                     p password 20 nil
                     e email 20 nil)
             (br)
-            (submit "signup"))
+            (submit "S'inscrire"))
           (acons afterward)))
 
 (def signup-handler (req afterward)
@@ -193,30 +193,30 @@ Returns nil if no logged-in user."
 (def prcookie (cook)
   (prrn "Set-Cookie: user=" cook "; expires=Sun, 17-Jan-2038 19:14:07 GMT"))
 
-(def pwfields ((o label "login"))
+(def pwfields ((o label "Se connecter"))
   (inputs u username 20 nil
           p password 20 nil)
   (br)
   (submit label))
 
 (defop forgotpw req
-  (prbold "What's your username?")
+  (prbold "Quel est votre nom d'utilisateur ?")
   (aform (fn (req)
            (let user (arg req "u")
              (iflet email emails*.user
                (if (errsafe:email-forgotpw-link user email)
                    (do
-                     (pr "We've emailed you a link. Please click on it within the next few minutes to reset your password.")
+                     (pr "Nous vous avons envoyé un lien. Merci de cliquer sur ce lien rapidement pour réinitialiser votre mot de passe.")
                      (br2)
-                     (pr "If you don't see it, check your spam folder."))
+                     (pr "Si vous ne trouvez pas le lien, vérifiez dans vos spams."))
                    (do
                      (ero (string "Failed to send password reset email to " user "!"))
-                     (pr "Sorry, there was a problem sending the email.")
+                     (pr "Désolé, il y a eu un problème pendant l'envoi du mail.")
                      (br2)
-                     (pr "Please tell an admin, so they can fix it.")))
-               (pr "You didn't provide a valid email. Please create a fresh account."))))
+                     (pr "Merci de prévenir bzg@bzg.fr, on va essayer d'arranger ça.")))
+               (pr "Vous n'avez pas donné d'email valide. Merci de créer un nouveau compte."))))
     (input "u" "" 20)
-    (submit "Send reset email")))
+    (submit "Envoyer un mail de réinitialisation")))
 
 ($ (require net/smtp net/head))
 (def email-forgotpw-link (user email)
@@ -254,9 +254,9 @@ Returns nil if no logged-in user."
              (if (len< newpw 4)
                (forgotpw-reset-page user "Passwords should be at least 4 characters. Please choose another.")
                (do (set-pw user newpw)
-                   (prn "Password changed.")
-                   (link "Try logging in now." "/")))))
-    (single-input "New password: " 'p 20 "update" t)))
+                   (prn "Mot de passe modifié.")
+                   (link "Essayer de vous connecter maintenant." "/")))))
+    (single-input "Nouveau mot de passe: " 'p 20 "update" t)))
 
 (= good-logins* (queue) bad-logins* (queue))
 
@@ -314,14 +314,14 @@ Returns nil if no logged-in user."
 (defop logout req
   (aif (get-user req)
     (do (logout-user it)
-        (pr "Logged out."))
-    (pr "You were not logged in.")))
+        (pr "Déconnecté."))
+    (pr "Vous n'êtes pas connecté.")))
 
 (defop whoami req
   (aif (get-user req)
     (prs it 'at req!ip)
-    (do (pr "You are not logged in. ")
-        (w/link (login-page) (pr "Log in"))
+    (do (pr "Vous n'êtes pas connecté. ")
+        (w/link (login-page) (pr "Connexion"))
         (pr "."))))
 
 (= formwid* 60 bigformwid* 80 numwid* 16 formatdoc-url* nil)
@@ -483,7 +483,7 @@ Returns nil if no logged-in user."
   `(defop ,name ,parm
      (if (get-user ,parm)
        (do ,@body)
-       (login-page "You need to be logged in to do that."
+       (login-page "Vous devez être connecté pour faire ça."
                    (list (fn (u ip))
                          (string ',name (reassemble-args ,parm)))))))
 

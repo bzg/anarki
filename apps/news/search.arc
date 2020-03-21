@@ -19,7 +19,7 @@
 
 (def search-bar (user)
   (tag (form action "search")
-    (pr "Search: ")
+    (pr "Recherche: ")
     (input 'q "" 18 )))
 
 (def search-page (user terms)
